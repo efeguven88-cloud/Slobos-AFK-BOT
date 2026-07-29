@@ -364,19 +364,6 @@ function createBot() {
 
   console.log(`[Bot] Creating bot instance...`);
   console.log(`[Bot] Connecting to ${config.server.ip}:${config.server.port}`);
-
-  try {
-    bot = mineflayer.createBot({
-      username: config['bot-account'].username,
-      password: config['bot-account'].password || undefined,
-      auth: config['bot-account'].type,
-      host: config.server.ip,
-      port: config.server.port,
-      version: config.server.version,
-      hideErrors: false,
-      checkTimeoutInterval: 120000 // 2 minutes - detects dead connections without false-positive disconnects
-    });
-
     bot.loadPlugin(pathfinder);
 
     // Connection timeout - if no spawn in 60s, reconnect
@@ -417,30 +404,6 @@ function createBot() {
           bot.chat('/gamerule sendCommandFeedback false');
         }
       }, 3000);
-
-      // Attempt creative mode (only works if bot has OP)
-      setTimeout(() => {
-        if (bot && botState.connected) {
-          bot.chat('/gamemode creative');
-          console.log('[INFO] Attempted to set creative mode (requires OP)');
-        }
-      }, 3000);
-
-      bot.on('messagestr', (message) => {
-        if (
-          message.includes('commands.gamemode.success.self') ||
-          message.includes('Set own game mode to Creative Mode')
-        ) {
-          console.log('[INFO] Bot is now in Creative Mode.');
-           
-          bot.chat('/gamerule sendCommandFeedback false');
-          
-        }
-      });
-    });
-
-    
-
     // Handle disconnection
     bot.on('end', (reason) => {
       const wasSpawned = botState.connected;
@@ -511,17 +474,6 @@ function scheduleReconnect() {
 // ============================================================
 function initializeModules(bot, mcData, defaultMove) {
   console.log('[Modules] Initializing all modules...');
-
-  // ---------- AUTO AUTH ----------
-  if (config.utils['auto-auth'].enabled) {
-    const password = config.utils['auto-auth'].password;
-    setTimeout(() => {
-      bot.chat(`/register ${password} ${password}`);
-      bot.chat(`/login ${password}`);
-      console.log('[Auth] Sent login commands');
-    }, 1000);
-  }
-
   // ---------- CHAT MESSAGES ----------
   if (config.utils['chat-messages'].enabled) {
     const messages = config.utils['chat-messages'].messages;
